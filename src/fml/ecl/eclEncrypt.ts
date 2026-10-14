@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-import newEcb from "./newEcb";
+import { ecb } from "@noble/ciphers/aes.js";
 
 // ECL encrypt: plaintext, key and IV in, ciphertext out.
 type EclEncrypt = (plaintext: Uint8Array, key: Uint8Array, iv: Uint8Array) => Uint8Array;
 
+// Raw AES-ECB, no PKCS#7 padding. noble's `encrypt` is single-use per instance,
+// so each block (which carries feedback from the previous one) gets a fresh one.
 const eclEncrypt: EclEncrypt = (plaintext, key, iv) => {
-  const ecb = newEcb(key);
   let fbD = Uint8Array.from(iv);
   let fbB = new Uint8Array(16);
 
@@ -19,7 +20,7 @@ const eclEncrypt: EclEncrypt = (plaintext, key, iv) => {
       block[j] = (plaintext[i + j]! ^ fbD[j]!) & 0xff;
     }
 
-    const ct = ecb.encrypt(Array.from(block));
+    const ct = ecb(key, { disablePadding: true }).encrypt(block);
 
     for (let j = 0; j < 16; j++) {
       result[resultPos++] = ct[j]! & 0xff;
@@ -35,7 +36,7 @@ const eclEncrypt: EclEncrypt = (plaintext, key, iv) => {
 
   const rem = plaintext.length % 16;
   if (rem > 0) {
-    const keystream = ecb.encrypt(Array.from(fbD));
+    const keystream = ecb(key, { disablePadding: true }).encrypt(fbD);
     for (let j = 0; j < rem; j++) {
       result[resultPos++] = (plaintext[fullBlocks + j]! ^ keystream[j]!) & 0xff;
     }

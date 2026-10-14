@@ -6,4 +6,4 @@ export { default as decryptAllChunks } from "./decryptAllChunks";
 export { default as derivePassword } from "./derivePassword";
 export { default as findLastNextHeaderOffset } from "./findLastNextHeaderOffset";
 export { default as computeChunkCrc32 } from "./crc32";
-export type { DecryptFmlResult } from "../../types";
+export type { DecryptFmlResult } from "../types";

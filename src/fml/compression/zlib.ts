@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-import DecompressError from "./decompressError";
+import { DecompressionError } from "../errors";
 
 // Decompress zlib data: bytes in, decompressed bytes out.
 type ZlibDecompress = (data: Uint8Array) => Promise<Uint8Array>;
@@ -28,7 +28,7 @@ const zlibDecompress: ZlibDecompress = async (data) => {
       }
     }
   } catch (err) {
-    throw new DecompressError("zlib decompression failed", { cause: err });
+    throw new DecompressionError("zlib decompression failed", { cause: err });
   }
 
   const output = new Uint8Array(total);

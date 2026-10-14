@@ -1,0 +1,18 @@
+# OSV Scanner configuration — https://google.github.io/osv-scanner/configuration/
+#
+# The only known finding is GHSA-g7r4-m6w7-qqqr: a path-traversal bug in
+# esbuild's *built-in dev server* (esbuild --serve / --servedir), Windows-only,
+# CVSS 2.5 (Low), patched in esbuild 0.28.1.
+#
+# It does not impact this project:
+#   - tsup (the sole esbuild consumer) uses esbuild's build API, never --serve.
+#   - esbuild is a dev-only transitive dependency; with `files: ["dist"]` it is
+#     not part of the published package.
+#   - The demo dev server is Vite's, not esbuild's.
+#
+# Revisit when esbuild 0.28.x is reachable through tsup (or tsup is replaced).
+
+[[IgnoredVulns]]
+id = "GHSA-g7r4-m6w7-qqqr"
+ignoreUntil = 2027-01-14
+reason = "esbuild dev-server path traversal, Windows-only. tsup uses the esbuild build API, never --serve; esbuild is dev-only and not shipped. Not reachable in this project."

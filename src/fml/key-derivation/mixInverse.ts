@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-import { MIX_ADDR } from "../../constants";
+import { MIX_ADDR } from "../constants";
 
 // Inverse Mixer: a 32-bit value in, a 32-bit value out.
 type MixInverse = (password: number) => number;

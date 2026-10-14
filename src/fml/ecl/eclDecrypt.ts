@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-import newEcb from "./newEcb";
+import { ecb } from "@noble/ciphers/aes.js";
 
 // ECL decrypt: ciphertext, key and IV in, plaintext out.
 type EclDecrypt = (ct: Uint8Array, key: Uint8Array, iv: Uint8Array) => Uint8Array;
 
+// Raw AES-ECB, no PKCS#7 padding. `decrypt` is reusable; the single `encrypt`
+// for the partial-block keystream is the only other use of the instance.
 const eclDecrypt: EclDecrypt = (ct, key, iv) => {
-  const ecb = newEcb(key);
+  const aesEcb = ecb(key, { disablePadding: true });
   let fbD = Uint8Array.from(iv);
   let fbB = new Uint8Array(16);
 
@@ -18,7 +20,7 @@ const eclDecrypt: EclDecrypt = (ct, key, iv) => {
       fbB[j] = (ct[i + j]! ^ fbD[j]!) & 0xff;
     }
 
-    const dec = ecb.decrypt(Array.from(ct.subarray(i, i + 16)));
+    const dec = aesEcb.decrypt(ct.subarray(i, i + 16));
 
     for (let j = 0; j < 16; j++) {
       result[resultPos++] = (dec[j]! ^ fbD[j]!) & 0xff;
@@ -31,7 +33,7 @@ const eclDecrypt: EclDecrypt = (ct, key, iv) => {
 
   const rem = ct.length % 16;
   if (rem > 0) {
-    const keystream = ecb.encrypt(Array.from(fbD));
+    const keystream = aesEcb.encrypt(fbD);
     for (let j = 0; j < rem; j++) {
       result[resultPos++] = (ct[fullBlocks + j]! ^ keystream[j]!) & 0xff;
     }

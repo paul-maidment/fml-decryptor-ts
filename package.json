@@ -1,14 +1,54 @@
 {
   "name": "fml-decryptor-ts",
-  "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Browser-only decryptor for MFME .fml containers",
+  "description": "Isomorphic TypeScript decryptor for MFME .fml containers",
   "license": "AGPL-3.0-only",
+  "author": "Paul Maidment",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/paul-maidment/fml-decryptor-ts.git"
+  },
+  "homepage": "https://github.com/paul-maidment/fml-decryptor-ts#readme",
+  "bugs": {
+    "url": "https://github.com/paul-maidment/fml-decryptor-ts/issues"
+  },
+  "keywords": [
+    "fml",
+    "mfme",
+    "decryptor",
+    "fruit-machine",
+    "aes",
+    "ripemd128",
+    "zlib"
+  ],
   "packageManager": "yarn@4.18.1",
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./primitives": {
+      "types": "./dist/primitives.d.ts",
+      "import": "./dist/primitives.js"
+    },
+    "./package.json": "./package.json"
+  },
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build:lib": "tsup",
+    "build:demo": "vite build",
+    "build": "yarn run build:lib && yarn run build:demo",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -16,20 +56,25 @@
     "typecheck:core": "tsc -p tsconfig.core.json",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "publint": "publint",
+    "attw": "attw --pack . --profile esm-only",
     "audit": "yarn npm audit",
     "audit:osv": "osv-scanner scan source -r .",
-    "check": "yarn run typecheck && yarn run typecheck:core && yarn run lint && yarn test && yarn run build && yarn run audit:osv",
+    "check": "yarn run typecheck && yarn run typecheck:core && yarn run lint && yarn test && yarn run build && yarn run publint && yarn run attw && yarn run audit:osv",
     "prepare": "husky"
   },
   "dependencies": {
-    "aes-js": "^3.1.2"
+    "@noble/ciphers": "^2.4.0"
   },
   "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
     "@eslint/js": "^10.0.1",
     "@types/node": "^26.6.5",
     "eslint": "^10.12.0",
     "globals": "^17.13.0",
     "husky": "^9.1.7",
+    "publint": "^0.3.25",
+    "tsup": "^8.5.1",
     "typescript": "^5.4.0",
     "typescript-eslint": "^8.71.2",
     "vite": "^8.3.4",

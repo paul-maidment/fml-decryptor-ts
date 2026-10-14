@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-import { DECRYPT_ALL_CHUNKS_IV_BLOCK } from "../../constants";
-import type { DecryptAllChunksResult } from "../../types";
+import { DECRYPT_ALL_CHUNKS_IV_BLOCK } from "../constants";
+import type { DecryptAllChunksResult } from "../types";
+import { InvalidFmlError } from "../errors";
 import computeChunkCrc32 from "./crc32";
 import { aesEcbEncryptBlock, eclDecrypt } from "../ecl";
 import { ripemd128 } from "../key-derivation";
@@ -15,7 +16,7 @@ type DecryptAllChunks = (bytes: Uint8Array, password: string) => Promise<Decrypt
 // concatenated; its CRC32 is checked (non-fatal) against the header.
 const decryptAllChunks: DecryptAllChunks = async (bytes, password) => {
   if (bytes.length < 148) {
-    throw new Error("FML data too short");
+    throw new InvalidFmlError("FML data too short");
   }
 
   const key = ripemd128(ascii(password));

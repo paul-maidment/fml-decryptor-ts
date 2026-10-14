@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-import { DECRYPT_FML_ALT_PASSWORD } from "../../constants";
-import type { DerivePasswordResult } from "../../types";
+import { DECRYPT_FML_ALT_PASSWORD } from "../constants";
+import type { DerivePasswordResult } from "../types";
 import { mix } from "../key-derivation";
 import findLastNextHeaderOffset from "./findLastNextHeaderOffset";
 import readU32 from "./readU32";

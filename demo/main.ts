@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 import "./style.css";
-import { decryptFml, type DecryptFmlResult } from "./fml";
+import { decryptFml, type DecryptFmlResult } from "../src/fml";
 
 function requireElement<T extends HTMLElement>(id: string): T {
   const element = document.getElementById(id);

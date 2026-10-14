@@ -1,44 +1,100 @@
 # FML Decryptor (TypeScript)
 
-A browser-only decryptor for MFME `.fml` containers. Drop an `.fml` file onto the page, it
-decrypts in-memory and offers a `_decoded.dat` download. Nothing is uploaded — there is no
-server.
+[![npm version](https://img.shields.io/npm/v/fml-decryptor-ts.svg)](https://www.npmjs.com/package/fml-decryptor-ts)
+[![license](https://img.shields.io/badge/license-AGPL--3.0--only-blue.svg)](LICENSE)
+[![CI](https://github.com/paul-maidment/fml-decryptor-ts/actions/workflows/ci.yml/badge.svg)](https://github.com/paul-maidment/fml-decryptor-ts/actions/workflows/ci.yml)
+
+An isomorphic, decryption-only library for MFME `.fml` containers. Give it the bytes of an
+`.fml` file and it returns the decoded payload — in the browser or on Node, with no backend.
 
 The crypto core is a standalone, DOM-free TypeScript port of the reference C# implementation
 (`FmlDecryptor.cs` / `Ripemd128.cs`), verified byte-for-byte against that project's published
 sample files.
 
-## Features
-
-- **Decrypt-only.** Ports the decode path; no encoder.
-- **Standalone core.** All crypto lives in `src/fml/` with no DOM dependency — the UI merely
-  imports it.
-- **Client-side.** Runs entirely in the browser via Vite; no backend.
-- **Multi-chunk, phase-aware.** Handles Phase 1 (legacy) and Phase 2 (current) files, auto-detecting
-  the phase and deriving the per-file password.
-- **Verified.** Unit vectors plus full byte-for-byte decode of the reference `SampleFiles`.
-
-## Quick start
-
-Requires Node.js `^20.19` or `>=22.12`. The project uses **Yarn 4 (Berry)**, pinned via the
-`packageManager` field and activated with Corepack.
+## Install
 
 ```bash
-corepack enable    # once, so `yarn` resolves to the pinned version
-yarn install
-
-yarn dev           # dev server -> http://localhost:5173
-yarn build         # production build -> dist/
-yarn preview       # serve the production build
+npm install fml-decryptor-ts
 ```
 
-## Using it
+- **ESM-only.** No CommonJS build.
+- **Node ≥20.19** (uses the global `DecompressionStream`).
+- **Isomorphic.** The core has no DOM dependency, so the same build runs in the browser.
 
-1. Open the dev server (or the built `dist/`) in a browser.
-2. Drag an `.fml` file onto the drop zone, or click to pick one.
-3. Read the result panel — phase, password, seed, chunk count, decoded size, and per-chunk
-   CRC32 status.
-4. Click **Download** to save `<name-without-.fml>_decoded.dat`.
+## Usage
+
+```ts
+import { decryptFml } from "fml-decryptor-ts";
+
+const bytes = new Uint8Array(await file.arrayBuffer());
+const result = await decryptFml(bytes);
+
+result.data; // Uint8Array — the decoded payload
+result.phase; // 1 | 2 — which file generation was detected
+result.password; // the derived (or fallback) 8-hex-char password
+result.usedFallback; // true when the static fallback password was needed
+result.seed; // number | undefined — Phase 2 only
+result.chunkCount; // number of chunks decoded
+result.chunkCrcOk; // boolean[] — per-chunk CRC32 status (non-fatal)
+result.decodedSize; // total decoded byte length
+```
+
+`decryptFml` accepts `Uint8Array | ArrayBuffer` and always returns `Uint8Array` in `result.data`.
+
+### Result shape
+
+```ts
+interface DecryptFmlResult {
+  data: Uint8Array;
+  phase: 1 | 2;
+  password: string;
+  usedFallback: boolean;
+  seed?: number;
+  chunkCount: number;
+  chunkCrcOk: boolean[];
+  decodedSize: number;
+}
+```
+
+### Errors
+
+All errors extend `FmlDecryptError`:
+
+| Class                | Thrown when                                                    |
+| -------------------- | -------------------------------------------------------------- |
+| `InvalidFmlError`    | The input is not a well-formed container (e.g. shorter than 148 bytes). |
+| `DecompressionError` | zlib decompression fails — the signal that the password was wrong. |
+
+`decryptFml` tries the derived password first and falls back to the static Phase 1 password
+only when a `DecompressionError` is raised. Any other error propagates unchanged.
+
+```ts
+import { decryptFml, FmlDecryptError, InvalidFmlError } from "fml-decryptor-ts";
+
+try {
+  const result = await decryptFml(bytes);
+} catch (err) {
+  if (err instanceof InvalidFmlError) {
+    // not an .fml file
+  } else if (err instanceof FmlDecryptError) {
+    // any other decryptor failure
+  }
+}
+```
+
+## Primitives
+
+The low-level building blocks live on the `fml-decryptor-ts/primitives` subpath. The top-level
+API is built entirely from these; they are exported for advanced or experimental use, and are
+not covered by the same stability guarantee as `decryptFml`.
+
+```ts
+import { ripemd128, mix, eclDecrypt, zlibDecompress } from "fml-decryptor-ts/primitives";
+```
+
+`/primitives` exports: `decryptAllChunks`, `derivePassword`, `findLastNextHeaderOffset`,
+`computeChunkCrc32`, `ripemd128`, `mix`, `mixInverse`, `eclDecrypt`, `eclEncrypt`,
+`aesEcbEncryptBlock`, `zlibDecompress`, `DECRYPT_FML_ALT_PASSWORD`.
 
 ## How it works
 
@@ -49,104 +105,83 @@ last 4 bytes ─► Mixer (×100) ─► 8-char hex password ─► RIPEMD-128 �
 
 Two file generations exist:
 
-| Phase | Password | Layout | Detected by |
-|-------|----------|--------|-------------|
-| **Phase 1** (legacy) | static `b67de657` | ends at EOF, no seed | last chunk's `next_header_offset == file size` |
-| **Phase 2** (current) | seed-derived via Mixer | 4-byte seed appended at EOF | last chunk's `next_header_offset == file size - 4` |
+| Phase                  | Password                  | Layout                         | Detected by                                   |
+| ---------------------- | ------------------------- | ------------------------------ | --------------------------------------------- |
+| **Phase 1** (legacy)   | static `b67de657`         | ends at EOF, no seed           | last chunk's `next_header_offset == file size` |
+| **Phase 2** (current)  | seed-derived via the Mixer | 4-byte seed appended at EOF    | last chunk's `next_header_offset == file size - 4` |
 
 Each chunk is independently ECL-decrypted and zlib-decompressed, trimmed to its declared size,
 and concatenated; a per-chunk CRC32 is checked (non-fatal) against the header.
-
-## Project layout
-
-```text
-.
-├─ index.html                 upload UI shell
-├─ vite.config.ts             Vite + Vitest config
-├─ eslint.config.mjs          flat ESLint config
-├─ SampleFiles/               vendored .fml + *_decoded.dat fixtures
-├─ scripts/
-│  └─ fetch-samples.mjs       refresh fixtures from the reference repo
-└─ src/
-   ├─ main.ts                 UI glue: picker, drag-drop, result panel, download
-   ├─ style.css
-   ├─ constants.ts            shared constants (named after the function they serve)
-   ├─ types.ts                shared types
-   ├─ types/aes-js.d.ts       ambient types for aes-js
-   └─ fml/                    standalone, DOM-free decryptor
-      ├─ index.ts             public API
-      ├─ key-derivation/      mix, mixInverse, ripemd128
-      ├─ ecl/                 ECL feedback mode over AES-ECB
-      ├─ compression/         zlib decompression (native DecompressionStream)
-      ├─ decrypt/             password derivation + chunk decode
-      └─ utils/               internal byte/string helpers
-```
-
-Each source file holds a single function in a consistent style (a local `type`, a `const`
-typed with it, and a `default` export). Most functions have a `<function>.test.ts` beside
-them, kept beside the code they cover: the crypto core and decode path carry direct
-known-answer and byte-for-byte vectors, while a few small helpers are covered indirectly
-through those tests.
-
-## Scripts
-
-| Script | What it does |
-|--------|--------------|
-| `yarn dev` | Start the Vite dev server |
-| `yarn build` | Typecheck and build to `dist/` |
-| `yarn preview` | Serve the production build |
-| `yarn test` | Run the Vitest suite once |
-| `yarn test:watch` | Vitest in watch mode |
-| `yarn typecheck` | `tsc --noEmit` |
-| `yarn typecheck:core` | Typecheck `src/fml/**` with no `DOM` lib (enforces the DOM-free core) |
-| `yarn lint` / `yarn lint:fix` | ESLint (fix in place) |
-| `yarn audit` | `yarn npm audit` |
-| `yarn audit:osv` | OSV Scanner over the lockfile |
-| `yarn check` | **Everything:** typecheck (+ core) → lint → test → build → CVE scan |
-
-### One command for all checks
-
-```bash
-yarn check
-```
-
-Runs the full gate in one shot. A Husky `pre-commit` hook runs the fast subset
-(`typecheck` + `typecheck:core` + `lint`) on every commit, and the GitHub Actions workflow
-(`.github/workflows/ci.yml`) runs the whole `check` on push/PR.
-
-`audit:osv` shells out to [OSV Scanner](https://github.com/google/osv-scanner); install the
-binary and put it on your `PATH` (the CI workflow does this automatically).
-
-## Testing
-
-Vitest, with test files kept beside the functions they cover:
-
-```bash
-yarn test
-```
-
-Coverage mirrors the reference C# test project: RIPEMD-128 and Mixer known-answer vectors, ECL
-encrypt/decrypt vectors, CRC32 vectors, and full byte-for-byte decode of `sample-1..4` and
-`multi_chunk_sample_1..3`.
 
 ## Verification & provenance
 
 The port is matched to the reference C# implementation, not just the prose format description:
 
 - **Reference project:** <https://github.com/paul-maidment/fml-decryptor>
-- **Sample files:** the 14 `.fml` / `_decoded.dat` fixtures in `SampleFiles/` are vendored from
-  that repository (committed, so tests are hermetic). Refresh them with
-  `node scripts/fetch-samples.mjs`.
+- **Sample files:** the `.fml` / `_decoded.dat` fixtures in `SampleFiles/` are vendored from that
+  repository (committed, so tests are hermetic). Refresh them with `node scripts/fetch-samples.mjs`.
 
-### Known gap
+Releases are published from GitHub Actions using npm **trusted publishing** (OIDC, no long-lived
+tokens) with automatic **provenance**, so the published bytes are tied to this repository, commit
+and workflow.
 
-No vendored sample is a Phase 1 (legacy) file. The suite builds a **synthetic Phase 1 fixture**
-from the ported `eclEncrypt` and the reference header constants, and flags it as such rather
-than claiming real-world coverage.
+## The demo
 
-## Out of scope
+`demo/` holds a browser page that drops an `.fml` file onto `decryptFml` and offers the decoded
+output as a download. It is a demo, not a shipped artifact:
 
-No encoder / encode UI, no React, no WebCrypto (it cannot do AES-ECB), no backend.
+```bash
+corepack enable
+yarn install
+yarn dev      # demo dev server -> http://localhost:5173
+yarn build    # library -> dist/ (tsup) and demo -> dist-demo/ (vite)
+```
+
+A GitHub Pages deploy of the demo is a separate follow-up.
+
+## Project layout
+
+```text
+.
+├─ src/fml/                standalone, DOM-free library (the published core)
+│  ├─ index.ts             public API: decryptFml, result type, error classes
+│  ├─ primitives.ts        fml-decryptor-ts/primitives
+│  ├─ errors.ts            FmlDecryptError → InvalidFmlError, DecompressionError
+│  ├─ constants.ts         shared constants (named after the function they serve)
+│  ├─ types.ts             shared types
+│  ├─ key-derivation/      mix, mixInverse, ripemd128
+│  ├─ ecl/                 ECL feedback mode over AES-ECB (@noble/ciphers)
+│  ├─ compression/         zlib decompression (native DecompressionStream)
+│  ├─ decrypt/             password derivation + chunk decode
+│  └─ utils/               internal byte/string helpers
+├─ demo/                   browser demo app (Vite)
+├─ tsup.config.ts          library build (dist/)
+├─ vite.config.ts          demo build (dist-demo/)
+├─ vitest.config.ts        test config
+├─ SampleFiles/            vendored .fml + *_decoded.dat fixtures
+└─ scripts/fetch-samples.mjs
+```
+
+## Scripts
+
+| Script                  | What it does                                                     |
+| ----------------------- | ---------------------------------------------------------------- |
+| `yarn dev`              | Start the demo dev server                                        |
+| `yarn build:lib`        | Build the library to `dist/` (tsup)                              |
+| `yarn build:demo`       | Build the demo to `dist-demo/` (Vite)                            |
+| `yarn build`            | Both of the above                                                |
+| `yarn test`             | Run the Vitest suite once                                        |
+| `yarn typecheck`        | `tsc --noEmit`                                                   |
+| `yarn typecheck:core`   | Typecheck `src/fml/**` with no `DOM` lib (enforces the DOM-free core) |
+| `yarn lint`             | ESLint                                                           |
+| `yarn publint`          | Validate the published package layout                            |
+| `yarn attw`             | Check the published types (ESM-only profile)                     |
+| `yarn check`            | **Everything:** typecheck (+ core) → lint → test → build → publint → attw → CVE scan |
+
+### Releasing
+
+Version bumps are published by pushing a `v*` tag; `.github/workflows/publish.yml` builds the
+library and runs `npm publish` via trusted publishing. See `CHANGELOG.md` for the release history.
 
 ## License
 

@@ -5,7 +5,7 @@ const { decodeMock } = vi.hoisted(() => ({ decodeMock: vi.fn() }));
 vi.mock("./decryptAllChunks", () => ({ default: decodeMock }));
 
 import decryptFml from "./decryptFml";
-import { DecompressError } from "../compression";
+import { DecompressionError } from "../errors";
 
 beforeEach(() => {
   decodeMock.mockReset();
@@ -22,7 +22,7 @@ it("range-error-from-decode decryptFml rethrows-and-does-not-fall-back", async (
 
 it("decompress-error-from-decode decryptFml falls-back-to-alt-password", async () => {
   decodeMock
-    .mockRejectedValueOnce(new DecompressError("bad"))
+    .mockRejectedValueOnce(new DecompressionError("bad"))
     .mockResolvedValueOnce({ data: new Uint8Array(0), chunkCount: 0, chunkCrcOk: [], decodedSize: 0 });
 
   const result = await decryptFml(new Uint8Array(200));
@@ -34,7 +34,7 @@ it("decompress-error-from-decode decryptFml falls-back-to-alt-password", async (
 
 it("decompress-error-from-decode decryptFml reports-phase-1-and-no-seed", async () => {
   decodeMock
-    .mockRejectedValueOnce(new DecompressError("bad"))
+    .mockRejectedValueOnce(new DecompressionError("bad"))
     .mockResolvedValueOnce({ data: new Uint8Array(0), chunkCount: 0, chunkCrcOk: [], decodedSize: 0 });
 
   const result = await decryptFml(new Uint8Array(200));

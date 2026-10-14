@@ -2,7 +2,7 @@
 import { deflateSync } from "node:zlib";
 import { expect, it } from "vitest";
 import zlibDecompress from "./zlib";
-import { DecompressError } from "../compression";
+import { DecompressionError } from "../errors";
 import { ascii } from "../utils";
 
 it("valid-deflate-data zlibDecompress returns-the-original-bytes", async () => {
@@ -11,6 +11,6 @@ it("valid-deflate-data zlibDecompress returns-the-original-bytes", async () => {
   expect(Array.from(result)).toEqual(Array.from(original));
 });
 
-it("invalid-deflate-data zlibDecompress throws-DecompressError", async () => {
-  await expect(zlibDecompress(new Uint8Array([1, 2, 3, 4]))).rejects.toBeInstanceOf(DecompressError);
+it("invalid-deflate-data zlibDecompress throws-DecompressionError", async () => {
+  await expect(zlibDecompress(new Uint8Array([1, 2, 3, 4]))).rejects.toBeInstanceOf(DecompressionError);
 });
