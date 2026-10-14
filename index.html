@@ -1,0 +1,28 @@
+<!-- SPDX-License-Identifier: AGPL-3.0-only -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FML Decryptor</title>
+  </head>
+  <body>
+    <main>
+      <h1>FML Decryptor</h1>
+      <p class="sub">
+        Decrypt MFME <code>.fml</code> containers entirely in your browser. The file never
+        leaves this page.
+      </p>
+
+      <label id="drop" class="drop" for="file">
+        <input id="file" type="file" accept=".fml" hidden />
+        <strong>Drop an .fml file here</strong>
+        <span>or click to choose a file</span>
+      </label>
+
+      <section id="result" class="panel" hidden></section>
+      <section id="error" class="panel error" hidden></section>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

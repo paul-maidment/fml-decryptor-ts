@@ -1,0 +1,38 @@
+{
+  "name": "fml-decryptor-ts",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Browser-only decryptor for MFME .fml containers",
+  "license": "AGPL-3.0-only",
+  "packageManager": "yarn@4.18.1",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "typecheck:core": "tsc -p tsconfig.core.json",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "audit": "yarn npm audit",
+    "audit:osv": "osv-scanner scan source -r .",
+    "check": "yarn run typecheck && yarn run typecheck:core && yarn run lint && yarn test && yarn run build && yarn run audit:osv",
+    "prepare": "husky"
+  },
+  "dependencies": {
+    "aes-js": "^3.1.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.6.5",
+    "eslint": "^10.12.0",
+    "globals": "^17.13.0",
+    "husky": "^9.1.7",
+    "typescript": "^5.4.0",
+    "typescript-eslint": "^8.71.2",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.4"
+  }
+}

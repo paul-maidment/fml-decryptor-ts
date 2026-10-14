@@ -1,0 +1,15 @@
+node_modules
+dist
+*.local
+.vite
+coverage
+*.log
+
+# Yarn
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
