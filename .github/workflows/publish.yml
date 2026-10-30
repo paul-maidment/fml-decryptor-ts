@@ -9,9 +9,14 @@ permissions:
   id-token: write # OIDC trusted publishing
   contents: read
 
+concurrency:
+  group: npm-publish
+  cancel-in-progress: false
+
 jobs:
   publish:
     runs-on: ubuntu-latest
+    environment: npm
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
@@ -23,8 +28,19 @@ jobs:
 
       - run: npm ci
 
-      - name: Build and test the library
-        run: npm run build:lib && npm test
+      - name: Verify tag matches package version
+        run: test "v$(node -p "require('./package.json').version")" = "$GITHUB_REF_NAME"
+
+      - name: Verify release
+        run: npm run verify:release
+
+      - name: Check if already published
+        id: check
+        run: |
+          if npm view "fml-decryptor-ts@$(node -p "require('./package.json').version")" version >/dev/null 2>&1; then
+            echo "published=true" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Publish to npm
+        if: steps.check.outputs.published != 'true'
         run: npm publish

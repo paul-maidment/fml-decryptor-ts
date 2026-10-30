@@ -4,20 +4,35 @@ on:
   push:
   pull_request:
 
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   check:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - node: "20.19"
+            full: false
+          - node: "22"
+            full: true
+          - node: "24"
+            full: false
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: 22
+          node-version: ${{ matrix.node }}
           cache: npm
 
       - run: npm ci
 
       - name: Install osv-scanner
+        if: matrix.full
         env:
           OSV_SCANNER_VERSION: v2.7.0
           OSV_SCANNER_SHA256: 160c6253e2922e9e0a6a9771c5c4c40a4b3c6090b34a3cdd5e80c96cc2e4218b
@@ -27,4 +42,10 @@ jobs:
           chmod +x osv-scanner
           sudo mv osv-scanner /usr/local/bin/osv-scanner
 
-      - run: npm run check
+      - name: Full check
+        if: matrix.full
+        run: npm run check
+
+      - name: Typecheck and test
+        if: ${{ !matrix.full }}
+        run: npm run typecheck && npm test

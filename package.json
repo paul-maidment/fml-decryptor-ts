@@ -62,6 +62,7 @@
     "audit": "npm audit",
     "audit:osv": "osv-scanner scan source -r .",
     "check": "npm run typecheck && npm run typecheck:core && npm run lint && npm test && npm run build && npm run publint && npm run attw && npm run audit:osv",
+    "verify:release": "npm run typecheck && npm run typecheck:core && npm run lint && npm test && npm run build:lib && npm run publint && npm run attw",
     "prepare": "husky"
   },
   "dependencies": {
