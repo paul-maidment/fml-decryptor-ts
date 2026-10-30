@@ -226,6 +226,13 @@ A GitHub Pages deploy of the demo is a separate follow-up.
 Version bumps are published by pushing a `v*` tag; `.github/workflows/publish.yml` builds the
 library and runs `npm publish` via trusted publishing. See `CHANGELOG.md` for the release history.
 
+## Third-party notices
+
+This package depends on [`@noble/ciphers`](https://github.com/paulmillr/noble-ciphers) (MIT) for the
+AES-ECB block operations. It is a normal runtime dependency, resolved by npm and not bundled into
+`dist/`. The copyright notices and full MIT text are in
+[`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
+
 ## License
 
 Licensed under the **GNU Affero General Public License v3.0** (`AGPL-3.0-only`) — see [`LICENSE`](LICENSE).
