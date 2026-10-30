@@ -40,3 +40,6 @@ jobs:
 
       - name: Full check
         run: npm run check
+
+      - name: Smoke test
+        run: npm run smoke
