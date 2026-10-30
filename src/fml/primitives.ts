@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 // Crypto primitives behind fml-decryptor-ts/primitives. The top-level API is
 // built entirely from these; they are exported for advanced/experimental use.
+
+export type { DecryptAllChunksResult, DerivePasswordResult } from "./types";
+
 export {
   decryptAllChunks,
   derivePassword,

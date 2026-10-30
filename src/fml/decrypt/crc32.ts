@@ -1,5 +1,13 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-// CRC32 of a decompressed chunk: bytes in, 32-bit checksum out.
+/**
+ * Compute the non-standard CRC32 used by FML chunk headers.
+ *
+ * Init 0, no final XOR, polynomial `0xEDB88320`, ported from the reference
+ * `FmlDecryptor.ComputeChunkCrc32`.
+ *
+ * @param data - Decompressed chunk bytes.
+ * @returns Unsigned 32-bit checksum.
+ */
 type ComputeChunkCrc32 = (data: Uint8Array) => number;
 
 // Non-standard CRC32: init 0, no final XOR, polynomial 0xEDB88320.

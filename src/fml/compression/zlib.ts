@@ -1,7 +1,13 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 import { DecompressionError } from "../errors";
 
-// Decompress zlib data: bytes in, decompressed bytes out.
+/**
+ * Decompress zlib (RFC 1950) data using the native `DecompressionStream`.
+ *
+ * @param data - Compressed bytes.
+ * @returns The decompressed bytes.
+ * @throws {@link DecompressionError} When the stream cannot be decompressed.
+ */
 type ZlibDecompress = (data: Uint8Array) => Promise<Uint8Array>;
 
 // Uses the native DecompressionStream ("deflate" == zlib / RFC 1950), which

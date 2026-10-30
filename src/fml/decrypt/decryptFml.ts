@@ -8,7 +8,26 @@ import derivePassword from "./derivePassword";
 // Full decode of a .fml file: bytes in, result out.
 type DecryptFml = (bytes: Uint8Array | ArrayBuffer) => Promise<DecryptFmlResult>;
 
-// Tries the derived password, then the fallback; rethrows if both fail.
+/**
+ * Decrypt and decode an MFME `.fml` container.
+ *
+ * Tries the password derived from the container first, then the static Phase 1
+ * fallback password. Errors other than {@link DecompressionError} propagate
+ * unchanged; if both passwords fail, the fallback attempt's error propagates.
+ *
+ * @param bytes - Raw `.fml` container bytes, as a `Uint8Array` or `ArrayBuffer`.
+ * @returns The decoded payload plus phase, password and per-chunk CRC details.
+ * @throws {@link InvalidFmlError} When the input is not a well-formed container.
+ * @throws {@link DecompressionError} When neither password yields valid zlib data.
+ *
+ * @example
+ * ```ts
+ * import { decryptFml } from "fml-decryptor-ts";
+ *
+ * const bytes = new Uint8Array(await file.arrayBuffer());
+ * const { data, phase } = await decryptFml(bytes);
+ * ```
+ */
 const decryptFml: DecryptFml = async (input) => {
   const bytes = input instanceof Uint8Array ? input : new Uint8Array(input);
 

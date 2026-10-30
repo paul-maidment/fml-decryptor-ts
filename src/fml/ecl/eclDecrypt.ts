@@ -1,7 +1,14 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 import { ecb } from "@noble/ciphers/aes.js";
 
-// ECL decrypt: ciphertext, key and IV in, plaintext out.
+/**
+ * Decrypt bytes with the ECL feedback mode over AES-ECB.
+ *
+ * @param ct - Ciphertext bytes.
+ * @param key - 16-byte AES key.
+ * @param iv - 16-byte initialisation vector.
+ * @returns Plaintext bytes of the same length.
+ */
 type EclDecrypt = (ct: Uint8Array, key: Uint8Array, iv: Uint8Array) => Uint8Array;
 
 // Raw AES-ECB, no PKCS#7 padding. `decrypt` is reusable; the single `encrypt`

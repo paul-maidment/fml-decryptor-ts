@@ -1,7 +1,12 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 import readU32 from "./readU32";
 
-// Walk the chunk chain: bytes in, the final next_header_offset out.
+/**
+ * Walk the chunk header chain and return the final `next_header_offset`.
+ *
+ * @param bytes - Raw `.fml` container bytes.
+ * @returns The `next_header_offset` of the last chunk.
+ */
 type FindLastNextHeaderOffset = (bytes: Uint8Array) => number;
 
 const MAX_CHUNKS = 10000;

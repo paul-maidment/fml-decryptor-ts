@@ -48,7 +48,12 @@ function f4(x: number, y: number, z: number): number {
   return ((x & z) | (y & ~z)) >>> 0;
 }
 
-// RIPEMD-128: hash arbitrary bytes to a 16-byte digest.
+/**
+ * Hash bytes with RIPEMD-128.
+ *
+ * @param data - Input bytes.
+ * @returns The 16-byte digest.
+ */
 type Ripemd128 = (data: Uint8Array) => Uint8Array;
 
 const ripemd128: Ripemd128 = (data) => {

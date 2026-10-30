@@ -1,7 +1,12 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 import { MIX_ADDR } from "../constants";
 
-// Inverse Mixer: a 32-bit value in, a 32-bit value out.
+/**
+ * Apply the inverse Mixer, recovering the value passed to {@link mix}.
+ *
+ * @param password - Mixed 32-bit value.
+ * @returns The original 32-bit value.
+ */
 type MixInverse = (password: number) => number;
 
 // Exact inverse of the Mixer, ported from the reference FmlDecryptor.MixInverse.

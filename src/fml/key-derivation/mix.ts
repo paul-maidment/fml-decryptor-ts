@@ -1,7 +1,12 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 import { MIX_ADDR } from "../constants";
 
-// Forward Mixer: a 32-bit value in, a 32-bit value out.
+/**
+ * Apply the forward Mixer to a 32-bit value.
+ *
+ * @param last4 - Seed or trailing 32-bit value.
+ * @returns The mixed 32-bit value.
+ */
 type Mix = (last4: number) => number;
 
 // Forward Mixer direction, ported from the reference FmlDecryptor.Mix.

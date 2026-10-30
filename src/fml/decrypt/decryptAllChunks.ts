@@ -9,7 +9,17 @@ import { zlibDecompress } from "../compression";
 import { ascii } from "../utils";
 import readU32 from "./readU32";
 
-// Decode every chunk: bytes + password in, concatenated output out.
+/**
+ * Decode every chunk of an FML container with an explicit password.
+ *
+ * Each chunk is ECL-decrypted, zlib-decompressed, trimmed to its declared size
+ * and concatenated. Per-chunk CRC32 mismatches are reported, not fatal.
+ *
+ * @param bytes - Raw `.fml` container bytes.
+ * @param password - 8-character hex password.
+ * @returns Concatenated payload and per-chunk CRC status.
+ * @throws {@link InvalidFmlError} When the container is shorter than 148 bytes.
+ */
 type DecryptAllChunks = (bytes: Uint8Array, password: string) => Promise<DecryptAllChunksResult>;
 
 // Each chunk is ECL-decrypted, zlib-decompressed, trimmed to dsize and

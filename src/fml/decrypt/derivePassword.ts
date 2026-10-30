@@ -6,7 +6,15 @@ import findLastNextHeaderOffset from "./findLastNextHeaderOffset";
 import readU32 from "./readU32";
 import toHex8 from "./toHex8";
 
-// Phase detection and password derivation: bytes in, password out.
+/**
+ * Detect the file generation and derive the decryption password.
+ *
+ * Phase 1 containers end at EOF and use the static password; Phase 2 containers
+ * append a 4-byte seed that is run through the Mixer.
+ *
+ * @param bytes - Raw `.fml` container bytes.
+ * @returns The password, detected phase and Phase 2 seed when present.
+ */
 type DerivePassword = (bytes: Uint8Array) => DerivePasswordResult;
 
 // Phase 1 (legacy) ends at EOF with the static password; Phase 2 (current)

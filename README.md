@@ -17,14 +17,17 @@ sample files.
 npm install fml-decryptor-ts
 ```
 
-- **ESM-only.** No CommonJS build.
+- **ESM-only.** The package exposes only the `import` condition; there is no CommonJS build.
+  `require("fml-decryptor-ts")` throws `ERR_PACKAGE_PATH_NOT_EXPORTED`, so CommonJS consumers must
+  use a dynamic `import()`.
 - **Node ≥22.12** (uses the global `DecompressionStream`).
 - **Isomorphic.** The core has no DOM dependency, so the same build runs in the browser.
 
 ## Building from source
 
-**Requirements:** Node ≥22.12 and npm. The repo uses npm (it ships a `package-lock.json`); yarn and
-pnpm are not required.
+**Requirements:** Node ≥22.12 to use the library; **Node ≥22.18 and npm to build this repo**
+(the build toolchain, tsup 9, requires 22.18). The repo ships a `.nvmrc` for the Node 22 line — run
+`nvm use`. npm is required (a `package-lock.json` is committed); yarn and pnpm are not.
 
 ```bash
 git clone https://github.com/paul-maidment/fml-decryptor-ts.git
@@ -69,6 +72,18 @@ result.decodedSize; // total decoded byte length
 ```
 
 `decryptFml` accepts `Uint8Array | ArrayBuffer` and always returns `Uint8Array` in `result.data`.
+
+### Browser and bundlers
+
+The published build is ESM with no Node built-ins, so Vite, Rollup, webpack and esbuild resolve it
+through the `import` condition. A browser consumer needs no polyfills or Node shims — zlib
+decompression uses the global `DecompressionStream`:
+
+```ts
+import { decryptFml } from "fml-decryptor-ts";
+
+const result = await decryptFml(await file.arrayBuffer());
+```
 
 ### Result shape
 
@@ -123,7 +138,8 @@ import { ripemd128, mix, eclDecrypt, zlibDecompress } from "fml-decryptor-ts/pri
 
 `/primitives` exports: `decryptAllChunks`, `derivePassword`, `findLastNextHeaderOffset`,
 `computeChunkCrc32`, `ripemd128`, `mix`, `mixInverse`, `eclDecrypt`, `eclEncrypt`,
-`aesEcbEncryptBlock`, `zlibDecompress`, `DECRYPT_FML_ALT_PASSWORD`.
+`aesEcbEncryptBlock`, `zlibDecompress`, `DECRYPT_FML_ALT_PASSWORD`. The result types
+`DecryptAllChunksResult` and `DerivePasswordResult` are exported from the same subpath.
 
 ## How it works
 
@@ -202,6 +218,8 @@ A GitHub Pages deploy of the demo is a separate follow-up.
 | `npm run publint`        | Validate the published package layout                            |
 | `npm run attw`           | Check the published types (ESM-only profile)                     |
 | `npm run check`          | **Everything:** typecheck (+ core) → lint → test → build → publint → attw → CVE scan |
+| `npm run smoke`          | Pack, install into a temp project, decrypt a sample, check CJS rejection and a Vite build |
+| `npm run verify:release` | Publish gate: typecheck, lint, test, build, publint, attw, then smoke |
 
 ### Releasing
 
