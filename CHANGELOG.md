@@ -22,7 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Replaced `aes-js` with `@noble/ciphers` for AES-ECB (raw block mode, no padding).
-- The library is now ESM-only and targets the browser and Node ≥20.19; the core stays DOM-free.
+- The library is now ESM-only and targets the browser and Node ≥22.12; the core stays DOM-free.
 - The former root Vite app is now a demo under `demo/` and is no longer the shipped artifact.
 
 [Unreleased]: https://github.com/paul-maidment/fml-decryptor-ts/compare/v0.1.0...HEAD
