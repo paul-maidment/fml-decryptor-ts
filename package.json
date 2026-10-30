@@ -49,6 +49,7 @@
     "build:lib": "tsup",
     "build:demo": "vite build",
     "build": "npm run build:lib && npm run build:demo",
+    "prepack": "npm run build:lib",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
