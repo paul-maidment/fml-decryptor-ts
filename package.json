@@ -53,6 +53,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
+    "smoke": "node scripts/smoke-consumer.mjs",
     "typecheck": "tsc --noEmit",
     "typecheck:core": "tsc -p tsconfig.core.json",
     "lint": "eslint .",
@@ -62,7 +63,7 @@
     "audit": "npm audit",
     "audit:osv": "osv-scanner scan source -r .",
     "check": "npm run typecheck && npm run typecheck:core && npm run lint && npm test && npm run build && npm run publint && npm run attw && npm run audit:osv",
-    "verify:release": "npm run typecheck && npm run typecheck:core && npm run lint && npm test && npm run build:lib && npm run publint && npm run attw",
+    "verify:release": "npm run typecheck && npm run typecheck:core && npm run lint && npm test && npm run build:lib && npm run publint && npm run attw && npm run smoke",
     "prepare": "husky"
   },
   "dependencies": {
