@@ -21,6 +21,35 @@ npm install fml-decryptor-ts
 - **Node ≥20.19** (uses the global `DecompressionStream`).
 - **Isomorphic.** The core has no DOM dependency, so the same build runs in the browser.
 
+## Building from source
+
+**Requirements:** Node ≥20.19 and npm. The repo uses npm (it ships a `package-lock.json`); yarn and
+pnpm are not required.
+
+```bash
+git clone https://github.com/paul-maidment/fml-decryptor-ts.git
+cd fml-decryptor-ts
+npm install
+npm run build     # library -> dist/, demo -> dist-demo/
+```
+
+`npm run build` is just `npm run build:lib && npm run build:demo`:
+
+| Output       | Built by              | What it is                                                                 |
+| ------------ | --------------------- | -------------------------------------------------------------------------- |
+| `dist/`      | `npm run build:lib`   | The published library (tsup: ESM + `.d.ts`). This is what `import "fml-decryptor-ts"` resolves to. |
+| `dist-demo/` | `npm run build:demo`  | The static browser demo (Vite).                                            |
+
+If you only need the library, run `npm run build:lib` on its own.
+
+> **Local consumers:** projects that depend on this package via
+> `"fml-decryptor-ts": "file:../fml-decryptor-ts"` (for example `fml-decoder-ts`) resolve the
+> package through `dist/`. Run `npm run build:lib` here first, otherwise their install/build will
+> fail or pick up a stale build.
+
+For day-to-day development run `npm run dev` (demo dev server), and `npm run check` before pushing
+(typecheck, lint, tests, build, package and CVE checks — the same suite CI runs).
+
 ## Usage
 
 ```ts
@@ -128,14 +157,10 @@ and workflow.
 ## The demo
 
 `demo/` holds a browser page that drops an `.fml` file onto `decryptFml` and offers the decoded
-output as a download. It is a demo, not a shipped artifact:
+output as a download. It is a demo, not a shipped artifact.
 
-```bash
-corepack enable
-yarn install
-yarn dev      # demo dev server -> http://localhost:5173
-yarn build    # library -> dist/ (tsup) and demo -> dist-demo/ (vite)
-```
+Run `npm run dev` for the dev server at <http://localhost:5173>, or `npm run build:demo` to emit a
+static build to `dist-demo/` (see [Building from source](#building-from-source)).
 
 A GitHub Pages deploy of the demo is a separate follow-up.
 
@@ -164,19 +189,19 @@ A GitHub Pages deploy of the demo is a separate follow-up.
 
 ## Scripts
 
-| Script                  | What it does                                                     |
-| ----------------------- | ---------------------------------------------------------------- |
-| `yarn dev`              | Start the demo dev server                                        |
-| `yarn build:lib`        | Build the library to `dist/` (tsup)                              |
-| `yarn build:demo`       | Build the demo to `dist-demo/` (Vite)                            |
-| `yarn build`            | Both of the above                                                |
-| `yarn test`             | Run the Vitest suite once                                        |
-| `yarn typecheck`        | `tsc --noEmit`                                                   |
-| `yarn typecheck:core`   | Typecheck `src/fml/**` with no `DOM` lib (enforces the DOM-free core) |
-| `yarn lint`             | ESLint                                                           |
-| `yarn publint`          | Validate the published package layout                            |
-| `yarn attw`             | Check the published types (ESM-only profile)                     |
-| `yarn check`            | **Everything:** typecheck (+ core) → lint → test → build → publint → attw → CVE scan |
+| Script                   | What it does                                                     |
+| ------------------------ | ---------------------------------------------------------------- |
+| `npm run dev`            | Start the demo dev server                                        |
+| `npm run build:lib`      | Build the library to `dist/` (tsup)                              |
+| `npm run build:demo`     | Build the demo to `dist-demo/` (Vite)                            |
+| `npm run build`          | Both of the above (`build:lib` then `build:demo`)                |
+| `npm test`               | Run the Vitest suite once                                        |
+| `npm run typecheck`      | `tsc --noEmit`                                                   |
+| `npm run typecheck:core` | Typecheck `src/fml/**` with no `DOM` lib (enforces the DOM-free core) |
+| `npm run lint`           | ESLint                                                           |
+| `npm run publint`        | Validate the published package layout                            |
+| `npm run attw`           | Check the published types (ESM-only profile)                     |
+| `npm run check`          | **Everything:** typecheck (+ core) → lint → test → build → publint → attw → CVE scan |
 
 ### Releasing
 

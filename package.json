@@ -22,10 +22,10 @@
     "ripemd128",
     "zlib"
   ],
-  "packageManager": "yarn@4.18.1",
   "engines": {
     "node": ">=20.19.0"
   },
+  "packageManager": "npm@11.13.0",
   "sideEffects": false,
   "files": [
     "dist"
@@ -48,7 +48,7 @@
     "dev": "vite",
     "build:lib": "tsup",
     "build:demo": "vite build",
-    "build": "yarn run build:lib && yarn run build:demo",
+    "build": "npm run build:lib && npm run build:demo",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -58,9 +58,9 @@
     "lint:fix": "eslint . --fix",
     "publint": "publint",
     "attw": "attw --pack . --profile esm-only",
-    "audit": "yarn npm audit",
+    "audit": "npm audit",
     "audit:osv": "osv-scanner scan source -r .",
-    "check": "yarn run typecheck && yarn run typecheck:core && yarn run lint && yarn test && yarn run build && yarn run publint && yarn run attw && yarn run audit:osv",
+    "check": "npm run typecheck && npm run typecheck:core && npm run lint && npm test && npm run build && npm run publint && npm run attw && npm run audit:osv",
     "prepare": "husky"
   },
   "dependencies": {

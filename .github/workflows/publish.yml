@@ -15,19 +15,16 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
-      - name: Enable Corepack
-        run: corepack enable
-
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org
           package-manager-cache: false
 
-      - run: yarn install --immutable
+      - run: npm ci
 
       - name: Build and test the library
-        run: yarn build:lib && yarn test
+        run: npm run build:lib && npm test
 
       - name: Publish to npm
         run: npm publish
