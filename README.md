@@ -18,12 +18,12 @@ npm install fml-decryptor-ts
 ```
 
 - **ESM-only.** No CommonJS build.
-- **Node ≥20.19** (uses the global `DecompressionStream`).
+- **Node ≥22.12** (uses the global `DecompressionStream`).
 - **Isomorphic.** The core has no DOM dependency, so the same build runs in the browser.
 
 ## Building from source
 
-**Requirements:** Node ≥20.19 and npm. The repo uses npm (it ships a `package-lock.json`); yarn and
+**Requirements:** Node ≥22.12 and npm. The repo uses npm (it ships a `package-lock.json`); yarn and
 pnpm are not required.
 
 ```bash
